@@ -52,9 +52,53 @@
 
 void L_Extract(Word32 L_32, Word16 *hi, Word16 *lo)
 {
-  *hi  = (Word16)(L_32 >> 16);
-  *lo  = (Word16)( L_msu( L_shr(L_32, 1) , *hi, 16384));  /* lo = L_32>>1   */
-  return;
+    Word32 L_shr_result, L_msu_result;
+    Word32 product;
+
+    // Tách phần hi (lấy 16 bit cao nhất)
+    *hi = (Word16)(L_32 >> 16);
+
+    // Thay thế L_shr(L_32, 1) bằng dịch phải 1 bit, có kiểm tra tràn và xử lý số âm
+    if (L_32 < 0)
+    {
+        L_shr_result = ~((~L_32) >> 1);  // Xử lý số âm (dịch phải với bit dấu)
+    }
+    else
+    {
+        L_shr_result = L_32 >> 1;  // Dịch phải trực tiếp cho số dương
+    }
+
+    // Tính tích của *hi và 16384
+    product = (Word32)(*hi) * 16384;
+
+    // Kiểm tra tràn số khi tính tích
+    if (product == (Word32)0x40000000L)
+    {
+        Overflow = 1;
+        product = MAX_32;  // Trả về giá trị tối đa nếu tràn
+    }
+    else
+    {
+        product = product << 1;  // Nhân đôi kết quả nếu không tràn
+    }
+
+    // Tính L_msu(L_shr_result, *hi, 16384) = L_shr_result - product
+    L_msu_result = L_shr_result - product;
+
+    // Kiểm tra tràn số khi thực hiện phép trừ
+    if (((L_shr_result ^ product) & MIN_32) != 0)
+    {
+        if ((L_msu_result ^ L_shr_result) & MIN_32)
+        {
+            L_msu_result = (L_shr_result < 0L) ? MIN_32 : MAX_32;
+            Overflow = 1;
+        }
+    }
+
+    // Gán kết quả cho *lo
+    *lo = (Word16)L_msu_result;
+
+    return;
 }
 
 /*___________________________________________________________________________

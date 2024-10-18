@@ -448,7 +448,7 @@ void agc(
 
     /* g0(Q12) = i(Q12) * (1-AGC_FAC)(Q15) */
     g0 = mult(i, AGC_FAC1);       /* Q12 */
-  }
+  }q
 
   /* compute gain(n) = AGC_FAC gain(n-1) + (1-AGC_FAC)gain_in/gain_out */
   /* sig_out(n) = gain(n) sig_out(n)                                   */
@@ -457,7 +457,7 @@ void agc(
   for(i=0; i<l_trm; i++) {
     gain = mult(gain, AGC_FAC);
     gain = add(gain, g0);
-    sig_out[i] = extract_h(L_shl(L_mult(sig_out[i], gain), 3));
+    sig_out[i] = L_esm(sig_out[i], gain, 3);
   }
   past_gain = gain;
 

@@ -357,7 +357,7 @@ static void Gbk_presel(
 /*-- Pre-select codebook #1 --*/
     *cand1 = 0;
     do {
-        L_temp = L_sub(L_tmp_y, L_shr(L_mult(thr1[*cand1], gcode0), sft_y));
+        L_temp = L_ssm(L_tmp_y, thr1[*cand1], gcode0 sft_y);
         if ((gcode0 > 0 && L_temp > 0L) || (gcode0 <= 0 && L_temp < 0L)) {
             (*cand1) = add(*cand1, 1);
         } else {
@@ -368,7 +368,7 @@ static void Gbk_presel(
 /*-- Pre-select codebook #2 --*/
     *cand2 = 0;
     do {
-        L_temp = L_sub(L_tmp_x, L_shr(L_mult(thr2[*cand2], gcode0), sft_x));
+        L_temp = L_ssm(L_tmp_x, thr2[*cand2], gcode0, sft_x);
         if ((gcode0 > 0 && L_temp > 0L) || (gcode0 <= 0 && L_temp < 0L)) {
             (*cand2) = add(*cand2, 1);
         } else {

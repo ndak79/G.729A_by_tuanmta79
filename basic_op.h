@@ -57,3 +57,4 @@ Word32 L_msu_mult(Word16 alp, Word16 sq2, Word16 sq, Word16 alp_16);
 
 Word16 L_esm(Word16 a, Word16 b, Word16 n);
 
+Word32 L_ssm(Word32 var1, Word16 var2, Word16 var3, Word16 var4);
