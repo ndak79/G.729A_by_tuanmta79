@@ -27,8 +27,8 @@ Word16 bad_lsf;        /* bad LSF indicator   */
 int decoder()
 {
     int argc = 3;  // Số lượng tham số
-    char *argv[] = {"decoder", "C:\\Users\\Gau\\CLionProjects\\g729A\\TEQCVSL_enc.bin",
-                    "C:\\Users\\Gau\\CLionProjects\\g729A\\TEQCVSL_dec.bin"};
+    char *argv[] = {"decoder", "test_enc.bin",
+                    "test_dec.bin"};
     Word16  synth_buf[L_FRAME+M], *synth; /* Synthesis                   */
     Word16  parm[PRM_SIZE+1];             /* Synthesis parameters        */
     Word16  serial[SERIAL_SIZE];          /* Serial stream               */
@@ -132,8 +132,8 @@ int main()
     clock_t start, end1, end2;
     double elapsed_ms1, elapsed_ms2;
     int argc = 3;  // Số lượng tham số
-    char *argv[] = {"coder", "C:\\Users\\Gau\\CLionProjects\\g729A\\TEQCVSL.bin",
-                    "C:\\Users\\Gau\\CLionProjects\\g729A\\TEQCVSL_enc.bin"};
+    char *argv[] = {"coder", "testbin",
+                    "test_enc.bin"};
     FILE *f_speech;               /* File of speech data                   */
     FILE *f_serial;               /* File of serial bits for transmission  */
 
