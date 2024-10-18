@@ -857,28 +857,28 @@ Word16 mult_r(Word16 var1, Word16 var2)
 
 Word32 L_shl(Word32 L_var1, Word16 var2)
 {
-    Word32 L_var_out = L_var1;  // Khởi tạo trực tiếp với giá trị của L_var1
-
+    // Nếu var2 <= 0, ta chuyển sang xử lý dịch phải
     if (var2 <= 0) {
-        return L_shr(L_var1, -var2);  // Dịch phải nếu var2 <= 0
-    }
-
-    while (var2 > 0) {
-        // Kiểm tra tràn số và gán kết quả ngay khi phát hiện tràn
-        if (L_var_out > 0x3fffffffL) {
-            Overflow = 1;
-            return MAX_32;  // Dừng ngay khi gặp tràn số dương
-        } else if (L_var_out < (Word32) 0xc0000000L) {
-            Overflow = 1;
-            return MIN_32;  // Dừng ngay khi gặp tràn số âm
+        var2 = -var2;
+        // Kiểm tra nếu dịch phải >= 31 thì trả về -1 cho số âm, 0 cho số dương
+        if (var2 >= 31) {
+            return (L_var1 < 0L) ? -1 : 0;
         }
-
-        // Dịch trái 1 bit
-        L_var_out <<= 1;
-        var2--;
+        // Xử lý dịch phải cho số âm và dương
+        if (L_var1 < 0) {
+            return ~((~L_var1) >> var2);
+        }
+        return L_var1 >> var2;
     }
 
-    return L_var_out;
+    // Kiểm tra tràn số trước khi dịch trái
+    if (var2 >= 31 || L_var1 > (0x7FFFFFFF >> var2) || L_var1 < (Word32)(0x80000000 >> var2)) {
+        Overflow = 1;
+        return (L_var1 > 0) ? MAX_32 : MIN_32;
+    }
+
+    // Dịch trái trực tiếp var2 bit
+    return L_var1 << var2;
 }
 
 /*___________________________________________________________________________
@@ -917,19 +917,31 @@ Word32 L_shl(Word32 L_var1, Word16 var2)
 
 Word32 L_shr(Word32 L_var1, Word16 var2)
 {
+    // Nếu var2 < 0, thực hiện dịch trái thay vì gọi L_shl
     if (var2 < 0) {
-        return L_shl(L_var1, -var2);  // Dịch trái nếu var2 < 0
+        var2 = -var2;
+
+        // Kiểm tra tràn trước khi dịch trái
+        if (var2 >= 31 || L_var1 > (0x7FFFFFFF >> var2) || L_var1 < (Word32)(0x80000000 >> var2)) {
+            Overflow = 1;
+            return (L_var1 > 0) ? MAX_32 : MIN_32;
+        }
+
+        // Dịch trái trực tiếp var2 bit
+        return L_var1 << var2;
     }
 
+    // Nếu var2 >= 31, trả về -1 cho số âm, 0 cho số dương
     if (var2 >= 31) {
-        return (L_var1 < 0L) ? -1 : 0;  // Nếu var2 >= 31, trả về -1 cho giá trị âm, 0 cho giá trị dương
+        return (L_var1 < 0L) ? -1 : 0;
     }
 
+    // Dịch phải trực tiếp var2 bit cho số âm và dương
     if (L_var1 < 0) {
-        return ~((~L_var1) >> var2);  // Xử lý khi L_var1 âm
+        return ~((~L_var1) >> var2);  // Xử lý số âm
     }
 
-    return L_var1 >> var2;  // Xử lý khi L_var1 dương
+    return L_var1 >> var2;  // Xử lý số dương
 }
 
 /*___________________________________________________________________________
@@ -1330,3 +1342,33 @@ Word32 L_msu_mult(Word16 alp, Word16 sq2, Word16 sq, Word16 alp_16)
     return result;
 }
 
+
+Word16 L_esm(Word16 a, Word16 b, Word16 n)
+{
+    Word32 L_var_out;
+    Word32 L_temp;
+
+    // Tính tích hai biến 16 bit trong 32 bit và kiểm tra tràn số
+    L_var_out = (Word32)a * (Word32)b;
+
+    // Kiểm tra xem L_var_out có bằng 0x40000000 không
+    if (L_var_out == (Word32)0x40000000L) {
+        Overflow = 1; // Đánh dấu có tràn số
+        return MAX_32; // Trả về giá trị tối đa
+    }
+
+    // Nhân đôi kết quả nếu không tràn số
+    L_var_out <<= 1; // Dịch trái một bit (tương đương nhân 2)
+
+    // Kiểm tra tràn số trước khi dịch trái
+    if (n >= 31 || L_var_out > (0x7FFFFFFF >> n) || L_var_out < (Word32)(0x80000000 >> n)) {
+        Overflow = 1;
+        return (L_var_out > 0) ? MAX_32 : MIN_32;
+    }
+
+    // Dịch trái L_var_out
+    L_temp = L_var_out << n;
+
+    // Trả về phần cao của L_temp
+    return (Word16)(L_temp >> 16);
+}

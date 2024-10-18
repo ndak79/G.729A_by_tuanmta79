@@ -53,3 +53,7 @@ Word16 div_s(Word16 var1, Word16 var2); /* Short division,       18 */
 Word32 L_add_Mpy_32_16(Word32 L_tmp, Word16 coeff_hi, Word16 coeff_lo, Word16 g_pitch);
 
 Word32 L_msu_mult(Word16 alp, Word16 sq2, Word16 sq, Word16 alp_16);
+
+
+Word16 L_esm(Word16 a, Word16 b, Word16 n);
+

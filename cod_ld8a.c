@@ -425,8 +425,8 @@ void Coder_ld8a(
 
     for (i = L_SUBFR-M, j = 0; i < L_SUBFR; i++, j++)
     {
-      temp       = extract_h(L_shl( L_mult(y1[i], gain_pit),  1) );
-      k          = extract_h(L_shl( L_mult(y2[i], gain_code), 2) );
+      temp       = L_esm(y1[i], gain_pit,  1);
+      k          = L_esm(y2[i], gain_code, 2);
       mem_w0[j]  = sub(xn[i], add(temp, k));
     }
 
