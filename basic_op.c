@@ -263,24 +263,27 @@ Word16 shl(Word16 var1, Word16 var2)
  |___________________________________________________________________________|
 */
 
-Word16 shr(Word16 var1, Word16 var2)
-{
-    // Nếu var2 < 0, thực hiện phép dịch trái (shl)
-    if (var2 < 0)
-    {
-        return shl(var1, -var2);
+Word16 shr(Word16 var1, Word16 var2) {
+    // Nếu var2 âm, thực hiện dịch trái thay vì dịch phải
+    if (var2 < 0) {
+        Word32 resultat = (Word32)var1 << (-var2);
+
+        // Kiểm tra tràn số khi dịch trái
+        if ((-var2 > 15 && var1 != 0) || (resultat != (Word32)((Word16)resultat))) {
+            Overflow = 1;
+            return (var1 > 0) ? MAX_16 : MIN_16;
+        }
+        return (Word16)resultat;
     }
 
     // Nếu var2 >= 15, trả về -1 nếu var1 âm, 0 nếu var1 dương
-    if (var2 >= 15)
-    {
+    if (var2 >= 15) {
         return (var1 < 0) ? (Word16)(-1) : (Word16)0;
     }
 
-    // Xử lý dịch phải theo giá trị của var1
+    // Thực hiện dịch phải
     return (var1 < 0) ? ~((~var1) >> var2) : var1 >> var2;
 }
-
 /*___________________________________________________________________________
  |                                                                           |
  |   Function Name : mult                                                    |
