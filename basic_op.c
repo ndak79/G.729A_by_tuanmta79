@@ -1375,48 +1375,40 @@ Word16 L_esm(Word16 a, Word16 b, Word16 n)
 
 Word32 L_ssm(Word32 var1, Word16 var2, Word16 var3, Word16 var4)
 {
-    Word32 L_mult_result, L_shr_result, L_sub_result;
+    Word32 L_mult_out, L_shr_out, L_sub_out;
 
-    // Tính L_mult(var2, var3)
-    L_mult_result = (Word32)var2 * (Word32)var3;
-    if (L_mult_result == (Word32)0x40000000L)
-    {
+    // Tính tích hai biến 16 bit trong 32 bit
+    L_mult_out = (Word32)var2 * (Word32)var3;
+
+    // Kiểm tra tràn số và xử lý kết quả của L_mult
+    if (L_mult_out == (Word32)0x40000000L) {
         Overflow = 1;
-        L_mult_result = MAX_32;
-    }
-    else
-    {
-        L_mult_result <<= 1;  // Dịch trái một bit (nhân 2)
-    }
-
-    // Tính L_shr(L_mult_result, var4)
-    if (var4 < 0) {
-        Word16 abs_var4 = -var4;
-
-        if (abs_var4 >= 31 || L_mult_result > (0x7FFFFFFF >> abs_var4) || L_mult_result < (Word32)(0x80000000 >> abs_var4)) {
-            Overflow = 1;
-            L_shr_result = (L_mult_result > 0) ? MAX_32 : MIN_32;
-        } else {
-            L_shr_result = L_mult_result << abs_var4;  // Dịch trái nếu var4 âm
-        }
-    } else if (var4 >= 31) {
-        L_shr_result = (L_mult_result < 0L) ? -1 : 0;
-    } else if (L_mult_result < 0) {
-        L_shr_result = ~((~L_mult_result) >> var4);  // Xử lý số âm
+        L_mult_out = MAX_32;
     } else {
-        L_shr_result = L_mult_result >> var4;  // Xử lý số dương
+        L_mult_out <<= 1; // Nhân đôi kết quả nếu không tràn số
     }
 
-    // Tính L_sub(var1, L_shr_result)
-    L_sub_result = var1 - L_shr_result;
-    if (((var1 ^ L_shr_result) & MIN_32) != 0)
-    {
-        if ((L_sub_result ^ var1) & MIN_32)
-        {
-            L_sub_result = (var1 < 0L) ? MIN_32 : MAX_32;
-            Overflow = 1;
+    // Xử lý dịch phải/trái dựa trên giá trị của var4
+    if (var4 != 0) {
+        Word16 abs_var4 = (var4 < 0) ? -var4 : var4;
+
+        if (abs_var4 >= 31) {
+            L_shr_out = (L_mult_out < 0L) ? MIN_32 : MAX_32;  // Quá giới hạn dịch
+        } else {
+            L_shr_out = (var4 < 0) ? (L_mult_out << abs_var4) : (L_mult_out >> abs_var4);  // Dịch trái/phải
         }
+    } else {
+        L_shr_out = L_mult_out;  // Không dịch
     }
 
-    return L_sub_result;
+    // Thực hiện phép trừ L_sub
+    L_sub_out = var1 - L_shr_out;
+
+    // Kiểm tra tràn số cho L_sub
+    if (((var1 ^ L_shr_out) & MIN_32) && ((L_sub_out ^ var1) & MIN_32)) {
+        L_sub_out = (var1 < 0L) ? MIN_32 : MAX_32;
+        Overflow = 1;
+    }
+
+    return L_sub_out;
 }
